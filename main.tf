@@ -8,7 +8,7 @@ provider "aws" {
 data "aws_availability_zones" "available" {}
 
 locals {
-  cluster_name = "education-eks-${random_string.suffix.result}"
+  cluster_name = "explore-california-cluster"
 }
 
 resource "random_string" "suffix" {
@@ -16,34 +16,34 @@ resource "random_string" "suffix" {
   special = false
 }
 
-module "vpc" {
+module "explore-california-vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "3.19.0"
 
-  name = "education-vpc"
+  name = "explore-california"
 
   cidr = "10.0.0.0/16"
-  azs  = slice(data.aws_availability_zones.available.names, 0, 3)
+  azs  = slice(data.aws_availability_zones.available.names, 1, 3)
 
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets  = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+  public_subnets = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 
-  enable_nat_gateway   = true
-  single_nat_gateway   = true
+  enable_nat_gateway = true
+  enable_vpn_gateway = true
+  enable_dns_support = true
   enable_dns_hostnames = true
 
-  public_subnet_tags = {
-    "kubernetes.io/cluster/${local.cluster_name}" = "shared"
-    "kubernetes.io/role/elb"                      = 1
-  }
-
   private_subnet_tags = {
-    "kubernetes.io/cluster/${local.cluster_name}" = "shared"
-    "kubernetes.io/role/internal-elb"             = 1
+    "kubernetes.io/cluster/explore-california-cluster": "owned",
+    "kubernetes.io/role/elb": "1"
+  }
+  public_subnet_tags = {
+    "kubernetes.io/cluster/explore-california-cluster": "owned",
+    "kubernetes.io/role/elb": "1"
   }
 }
 
-module "eks" {
+module "explore-california-cluster" {
   source  = "terraform-aws-modules/eks/aws"
   version = "19.5.1"
 
@@ -63,21 +63,25 @@ module "eks" {
     one = {
       name = "node-group-1"
 
-      instance_types = ["t3.small"]
+      instance_types = ["t3.medium"]
 
-      min_size     = 1
-      max_size     = 3
-      desired_size = 2
+      asg_max_size  = 5
+      spot_price = "0.02"
+      additional_security_group_ids = [ aws_security_group.enable_ssh.id ]
+      kubelet_extra_args = "--node-labels=node.kubernetes.io/lifecycle=spot"
+      suspended_processes = ["AZRebalance"]
     }
 
     two = {
       name = "node-group-2"
 
-      instance_types = ["t3.small"]
+      instance_types = ["t3.large"]
 
-      min_size     = 1
-      max_size     = 2
-      desired_size = 1
+      asg_max_size  = 5
+      spot_price = "0.03"
+      additional_security_group_ids = [ aws_security_group.enable_ssh.id ]
+      kubelet_extra_args = "--node-labels=node.kubernetes.io/lifecycle=spot"
+      suspended_processes = ["AZRebalance"]
     }
   }
 }
