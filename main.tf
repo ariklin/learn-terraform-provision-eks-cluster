@@ -18,10 +18,10 @@ resource "random_string" "suffix" {
 
 resource "aws_security_group" "enable_ssh" {
   name_prefix = "worker_group_mgmt_one"
-  vpc_id      = module.explore-california-vpc.vpc_id
+  vpc_id      = module.vpc_id
 
   ingress {
-    from_port = 22
+    from_port = 2
     to_port   = 22
     protocol  = "tcp"
 
@@ -118,8 +118,8 @@ module "irsa-ebs-csi" {
   oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
 }
 
-resource "aws_explore-california-cluster_addon" "ebs-csi" {
-  cluster_name             = module.explore-california-cluster.cluster_name
+resource "aws_eks_addon" "ebs-csi" {
+  cluster_name             = module.eks.cluster_name
   addon_name               = "aws-ebs-csi-driver"
   addon_version            = "v1.5.2-explore-california-clusterbuild.1"
   service_account_role_arn = module.irsa-ebs-csi.iam_role_arn
