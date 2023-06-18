@@ -16,6 +16,21 @@ resource "random_string" "suffix" {
   special = false
 }
 
+resource "aws_security_group" "enable_ssh" {
+  name_prefix = "worker_group_mgmt_one"
+  vpc_id      = module.explore-california-vpc.vpc_id
+
+  ingress {
+    from_port = 22
+    to_port   = 22
+    protocol  = "tcp"
+
+    cidr_blocks = [
+      "10.0.0.0/16"
+    ]
+  }
+}
+
 module "explore-california-vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "3.19.0"
