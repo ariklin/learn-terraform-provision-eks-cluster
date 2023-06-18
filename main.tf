@@ -44,7 +44,7 @@ module "explore-california-vpc" {
 }
 
 module "explore-california-cluster" {
-  source  = "terraform-aws-modules/eks/aws"
+  source  = "terraform-aws-modules/explore-california-cluster/aws"
   version = "19.5.1"
 
   cluster_name    = local.cluster_name
@@ -54,12 +54,12 @@ module "explore-california-cluster" {
   subnet_ids                     = module.vpc.private_subnets
   cluster_endpoint_public_access = true
 
-  eks_managed_node_group_defaults = {
+  explore-california-cluster_managed_node_group_defaults = {
     ami_type = "AL2_x86_64"
 
   }
 
-  eks_managed_node_groups = {
+  explore-california-cluster_managed_node_groups = {
     one = {
       name = "node-group-1"
 
@@ -87,7 +87,7 @@ module "explore-california-cluster" {
 }
     
 
-# https://aws.amazon.com/blogs/containers/amazon-ebs-csi-driver-is-now-generally-available-in-amazon-eks-add-ons/ 
+# https://aws.amazon.com/blogs/containers/amazon-ebs-csi-driver-is-now-generally-available-in-amazon-explore-california-cluster-add-ons/ 
 data "aws_iam_policy" "ebs_csi_policy" {
   arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
@@ -97,19 +97,19 @@ module "irsa-ebs-csi" {
   version = "4.7.0"
 
   create_role                   = true
-  role_name                     = "AmazonEKSTFEBSCSIRole-${module.eks.cluster_name}"
-  provider_url                  = module.eks.oidc_provider
+  role_name                     = "Amazonexplore-california-clusterTFEBSCSIRole-${module.explore-california-cluster.cluster_name}"
+  provider_url                  = module.explore-california-cluster.oidc_provider
   role_policy_arns              = [data.aws_iam_policy.ebs_csi_policy.arn]
   oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
 }
 
-resource "aws_eks_addon" "ebs-csi" {
-  cluster_name             = module.eks.cluster_name
+resource "aws_explore-california-cluster_addon" "ebs-csi" {
+  cluster_name             = module.explore-california-cluster.cluster_name
   addon_name               = "aws-ebs-csi-driver"
-  addon_version            = "v1.5.2-eksbuild.1"
+  addon_version            = "v1.5.2-explore-california-clusterbuild.1"
   service_account_role_arn = module.irsa-ebs-csi.iam_role_arn
   tags = {
-    "eks_addon" = "ebs-csi"
+    "explore-california-cluster_addon" = "ebs-csi"
     "terraform" = "true"
   }
 }
