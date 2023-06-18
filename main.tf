@@ -31,7 +31,7 @@ resource "aws_security_group" "enable_ssh" {
   }
 }
 
-module "explore-california-vpc" {
+module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "3.19.0"
 
