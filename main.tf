@@ -18,7 +18,7 @@ resource "random_string" "suffix" {
 
 resource "aws_security_group" "enable_ssh" {
   name_prefix = "worker_group_mgmt_one"
-  vpc_id      = module.vpc_id
+  vpc_id      = module.vpc.vpc_id
 
   ingress {
     from_port = 2
