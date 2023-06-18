@@ -8,7 +8,7 @@ provider "aws" {
 data "aws_availability_zones" "available" {}
 
 locals {
-  cluster_name = "explore-california-cluster"
+  cluster_name = "eks"
 }
 
 resource "random_string" "suffix" {
@@ -43,8 +43,8 @@ module "explore-california-vpc" {
   }
 }
 
-module "explore-california-cluster" {
-  source  = "terraform-aws-modules/explore-california-cluster/aws"
+module "eks" {
+  source  = "terraform-aws-modules/eks/aws"
   version = "19.5.1"
 
   cluster_name    = local.cluster_name
@@ -54,12 +54,12 @@ module "explore-california-cluster" {
   subnet_ids                     = module.vpc.private_subnets
   cluster_endpoint_public_access = true
 
-  explore-california-cluster_managed_node_group_defaults = {
+  eks_managed_node_group_defaults = {
     ami_type = "AL2_x86_64"
 
   }
 
-  explore-california-cluster_managed_node_groups = {
+  eks_managed_node_groups = {
     one = {
       name = "node-group-1"
 
