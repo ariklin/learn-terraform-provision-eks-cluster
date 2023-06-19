@@ -9,27 +9,8 @@ locals {
   cluster_name = "eks"
 }
 
-data "aws_eks_cluster" "cluster" {
-  name =  local.cluster_name
-}
-
-data "aws_eks_cluster_auth" "cluster" {
-  name = local.cluster_name
-}
-
 data "aws_availability_zones" "available" {
   state = "available"
-}
-
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
-  token                  = data.aws_eks_cluster_auth.cluster.token
-}
-
-resource "random_string" "suffix" {
-  length  = 8
-  special = false
 }
 
 module "vpc" {
@@ -56,21 +37,6 @@ module "vpc" {
   public_subnet_tags = {
     "kubernetes.io/cluster/eks": "owned",
     "kubernetes.io/role/elb": "1"
-  }
-}
-
-resource "aws_security_group" "enable_ssh" {
-  name_prefix = "worker_group_mgmt_one"
-  vpc_id      = module.vpc.vpc_id
-
-  ingress {
-    from_port = 22
-    to_port   = 22
-    protocol  = "tcp"
-
-    cidr_blocks = [
-      "10.0.0.0/16"
-    ]
   }
 }
 
@@ -124,4 +90,31 @@ resource "aws_ecr_repository" "explore-california" {
     scan_on_push = true
   }
 }
+
+data "aws_iam_policy" "ebs_csi_policy" {
+  arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+}
+
+module "irsa-ebs-csi" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+  version = "4.7.0"
+
+  create_role                   = true
+  role_name                     = "AmazonEKSTFEBSCSIRole-${module.eks.cluster_name}"
+  provider_url                  = module.eks.oidc_provider
+  role_policy_arns              = [data.aws_iam_policy.ebs_csi_policy.arn]
+  oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
+}
+
+resource "aws_eks_addon" "ebs-csi" {
+  cluster_name             = module.eks.cluster_name
+  addon_name               = "aws-ebs-csi-driver"
+  addon_version            = "v1.5.2-eksbuild.1"
+  service_account_role_arn = module.irsa-ebs-csi.iam_role_arn
+  tags = {
+    "eks_addon" = "ebs-csi"
+    "terraform" = "true"
+  }
+}
+
 
