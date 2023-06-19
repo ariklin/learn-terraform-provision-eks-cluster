@@ -64,7 +64,6 @@ module "eks" {
 
       asg_max_size  = 5
       spot_price = "0.02"
-      additional_security_group_ids = [ aws_security_group.enable_ssh.id ]
       kubelet_extra_args = "--node-labels=node.kubernetes.io/lifecycle=spot"
       suspended_processes = ["AZRebalance"]
     }
@@ -76,7 +75,6 @@ module "eks" {
 
       asg_max_size  = 5
       spot_price = "0.03"
-      additional_security_group_ids = [ aws_security_group.enable_ssh.id ]
       kubelet_extra_args = "--node-labels=node.kubernetes.io/lifecycle=spot"
       suspended_processes = ["AZRebalance"]
     }
