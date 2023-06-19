@@ -10,11 +10,11 @@ locals {
 }
 
 data "aws_eks_cluster" "cluster" {
-  name =  cluster_name
+  name =  local.cluster_name
 }
 
 data "aws_eks_cluster_auth" "cluster" {
-  name = cluster_name
+  name = local.cluster_name
 }
 
 data "aws_availability_zones" "available" {
