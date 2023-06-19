@@ -6,11 +6,11 @@ provider "aws" {
 }
 
 data "aws_eks_cluster" "cluster" {
-  name = module.eks.cluster_id
+  name =  module.cluster_name.cluster_id
 }
 
 data "aws_eks_cluster_auth" "cluster" {
-  name = module.eks.cluster_id
+  name = module.cluster_name.cluster_id
 }
 
 data "aws_availability_zones" "available" {
@@ -65,12 +65,27 @@ module "vpc" {
   enable_dns_hostnames = true
 
   private_subnet_tags = {
-    "kubernetes.io/cluster/explore-california-cluster": "owned",
+    "kubernetes.io/cluster/eks": "owned",
     "kubernetes.io/role/elb": "1"
   }
   public_subnet_tags = {
-    "kubernetes.io/cluster/explore-california-cluster": "owned",
+    "kubernetes.io/cluster/eks": "owned",
     "kubernetes.io/role/elb": "1"
+  }
+}
+
+resource "aws_security_group" "enable_ssh" {
+  name_prefix = "worker_group_mgmt_one"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    from_port = 22
+    to_port   = 22
+    protocol  = "tcp"
+
+    cidr_blocks = [
+      "10.0.0.0/16"
+    ]
   }
 }
 
