@@ -7,7 +7,4 @@ variable "region" {
   default     = "us-west-2"
 }
 
-variable "name" {
-  description = "Cluster name"
-  type        = string
-}
+
