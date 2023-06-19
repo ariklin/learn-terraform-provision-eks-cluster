@@ -6,11 +6,11 @@ provider "aws" {
 }
 
 data "aws_eks_cluster" "cluster" {
-  name =  module.cluster_name.cluster_id
+  name =  module.eks.cluster_id
 }
 
 data "aws_eks_cluster_auth" "cluster" {
-  name = module.cluster_name.cluster_id
+  name = module.eks.cluster_id
 }
 
 data "aws_availability_zones" "available" {
