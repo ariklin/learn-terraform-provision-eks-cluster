@@ -31,11 +31,11 @@ module "vpc" {
   enable_dns_hostnames = true
 
   private_subnet_tags = {
-    "kubernetes.io/cluster/eks": "owned",
+    "kubernetes.io/cluster/explore-california-cluster": "owned",
     "kubernetes.io/role/elb": "1"
   }
   public_subnet_tags = {
-    "kubernetes.io/cluster/eks": "owned",
+    "kubernetes.io/cluster/explore-california-cluster": "owned",
     "kubernetes.io/role/elb": "1"
   }
 }
