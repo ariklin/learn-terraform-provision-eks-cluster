@@ -6,7 +6,7 @@ provider "aws" {
 }
 
 locals {
-  cluster_name = "eks"
+  cluster_name = "explore-california-cluster"
 }
 
 data "aws_availability_zones" "available" {
